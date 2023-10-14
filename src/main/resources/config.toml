@@ -1,0 +1,5 @@
+# Amount of lobbies that will be created
+lobbies= 1
+
+# Image that will be used when creating a lobby
+lobbyImage= "ciernava/darkanian-containers:lobby-container"
