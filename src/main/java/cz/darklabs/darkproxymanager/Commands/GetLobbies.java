@@ -1,8 +1,9 @@
-package cz.darklabs.darkproxymanager;
+package cz.darklabs.darkproxymanager.Commands;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 
+import cz.darklabs.darkproxymanager.DarkProxyManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 

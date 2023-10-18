@@ -10,24 +10,23 @@ import io.kubernetes.client.openapi.ApiException;
 
 public class PlayerListener {
 
-  private final ProxyServer proxy;
-  private DarkProxyManager DarkProxyManager;
+    private final ProxyServer proxy;
+    private DarkProxyManager DarkProxyManager;
 
-  public PlayerListener(ProxyServer proxy) {
-    this.proxy = proxy;
-  }
-
-  @Subscribe()
-  public void onPlayerChooseInitialServer(PlayerChooseInitialServerEvent event) {
-    try {
-      event.setInitialServer(proxy.getServer("lobby." + 1).get());
-    } catch (Exception e) {
-      try {
-        ServerManager.createLobbyServer(DarkProxyManager);
-      } catch (ApiException | IOException e1) {
-        e1.printStackTrace();
-      }
-      DarkProxyManager.getLogger().error(LoggerColors.RED_BOLD + "Error while connecting player to lobby server!" + "\u001B[0m");
+    public PlayerListener(ProxyServer proxy) {
+        this.proxy = proxy;
     }
-  }
+
+    @Subscribe()
+    public void onPlayerChooseInitialServer(PlayerChooseInitialServerEvent event) {
+        try {
+            if (proxy.getServer("lobby." + 1).isPresent()) {
+                event.setInitialServer(proxy.getServer("lobby." + 1).get());
+            } else {
+                ServerManager.createLobbyServer(DarkProxyManager);
+            }
+        } catch (Exception e) {
+            DarkProxyManager.getLogger().error(LoggerColors.RED_BOLD + "Error while connecting player to lobby server!" + "\u001B[0m");
+        }
+    }
 }

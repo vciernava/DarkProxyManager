@@ -11,7 +11,7 @@ import cz.darklabs.darkproxymanager.DarkProxyManager;
 import lombok.Getter;
 import lombok.Setter;
 
-public class Configs {
+public class Configurations {
     @Getter
     private static Config config;
     private static Path configFile;

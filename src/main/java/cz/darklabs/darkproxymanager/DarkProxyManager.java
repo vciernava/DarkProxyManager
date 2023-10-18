@@ -7,10 +7,14 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
+import cz.darklabs.darkproxymanager.Commands.GetLobbies;
+import cz.darklabs.darkproxymanager.Commands.TPS;
+import cz.darklabs.darkproxymanager.Configs.Configurations;
 import io.kubernetes.client.openapi.ApiException;
 
 import java.io.IOException;
 import java.nio.file.Path;
+
 import lombok.Getter;
 
 import org.slf4j.Logger;
@@ -23,9 +27,12 @@ import org.slf4j.Logger;
 )
 public class DarkProxyManager {
 
-    @Getter private final Logger logger;
-    @Getter private final ProxyServer proxy;
-    @Getter private final Path dataDirectory;
+    @Getter
+    private final Logger logger;
+    @Getter
+    private final ProxyServer proxy;
+    @Getter
+    private final Path dataDirectory;
 
     @Inject
     public DarkProxyManager(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
@@ -38,14 +45,15 @@ public class DarkProxyManager {
     public void onProxyInitialization(ProxyInitializeEvent event) {
         proxy.getEventManager().register(this, new PlayerListener(proxy));
         proxy.getCommandManager().register("lobbies", new GetLobbies(this));
+        proxy.getCommandManager().register("tps", new TPS(this));
 
-        Configs.loadConfigs(this);
+        Configurations.loadConfigs(this);
 
         startLobbyServers();
     }
 
     private void startLobbyServers() {
-        if(Configs.getConfig().getLobbies() == 0) {
+        if (Configurations.getConfig().getLobbies() == 0) {
             logger.error(LoggerColors.RED_BOLD + "No lobbies have been started, you can change this in config file!" + "\u001B[0m");
             return;
         }
@@ -53,13 +61,13 @@ public class DarkProxyManager {
         logger.info(LoggerColors.CYAN_BOLD + "Starting lobby servers..." + "\u001B[0m");
 
         try {
-            for(int i = 0; i < Configs.getConfig().getLobbies(); i++) {
+            for (int i = 0; i < Configurations.getConfig().getLobbies(); i++) {
                 ServerManager.createLobbyServer(this);
             }
 
             logger.info(LoggerColors.GREEN_BOLD + "Lobby servers started successfully!" + "\u001B[0m");
         } catch (ApiException | IOException e) {
-            e.printStackTrace();
+            logger.error(LoggerColors.RED_BOLD + "Error while starting lobby servers!" + "\u001B[0m");
         }
     }
 }

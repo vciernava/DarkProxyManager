@@ -16,35 +16,32 @@ import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1Pod;
 import io.kubernetes.client.util.Config;
+import lombok.Getter;
 
 public class PendingLobbyServers {
-  private static List<UUID> list = new ArrayList<>();
+    @Getter
+    private static final List<UUID> lobbies = new ArrayList<>();
 
-  public static void add(UUID uuid, DarkProxyManager DarkProxyManager) throws IOException, ApiException {
-    list.add(uuid);
-    registerServer(DarkProxyManager.getProxy(), uuid);
-  }
+    public static void add(UUID uuid, DarkProxyManager DarkProxyManager) throws IOException, ApiException {
+        lobbies.add(uuid);
+        registerServer(DarkProxyManager.getProxy(), uuid);
+    }
 
-  public static void registerServer(ProxyServer proxy, UUID uuid) throws IOException, ApiException {
-    ApiClient client = Config.defaultClient();
-    Configuration.setDefaultApiClient(client);
-    CoreV1Api api = new CoreV1Api();
+    public static void registerServer(ProxyServer proxy, UUID uuid) throws IOException, ApiException {
+        ApiClient client = Config.defaultClient();
+        Configuration.setDefaultApiClient(client);
+        CoreV1Api api = new CoreV1Api();
 
-    V1Pod server = api.readNamespacedPod("lobby." + uuid, "default", null);
+        V1Pod server = api.readNamespacedPod("lobby." + uuid, "default", null);
+        if (server.getStatus() == null || server.getSpec() == null) {
+            throw new RuntimeException("Server not found!");
+        }
 
-    String serverIP = server.getStatus().getPodIP();
-    int serverPort = server.getSpec().getContainers().get(0).getPorts().get(0).getContainerPort();
+        String serverIP = server.getStatus().getPodIP();
+        int serverPort = server.getSpec().getContainers().get(0).getPorts().get(0).getContainerPort();
 
-    ServerInfo serverInfo = new ServerInfo("lobby." + (list.indexOf(uuid)+1), new InetSocketAddress(InetAddress.getByName(serverIP), serverPort));
+        ServerInfo serverInfo = new ServerInfo("lobby.1", new InetSocketAddress(InetAddress.getByName(serverIP), serverPort));
 
-    proxy.registerServer(serverInfo);
-  }
-
-  public static List<UUID> getList() {
-    return list;
-  }
-
-  public static UUID getList(int index) {
-    return list.get(index);
-  }
+        proxy.registerServer(serverInfo);
+    }
 }

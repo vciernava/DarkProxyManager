@@ -2,23 +2,34 @@ package cz.darklabs.darkproxymanager.Commands;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
-
 import cz.darklabs.darkproxymanager.DarkProxyManager;
+import cz.darklabs.darkproxymanager.ServerManager;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+
+import java.io.IOException;
 
 
-public final class GetLobbies implements SimpleCommand {
+public final class TPS implements SimpleCommand {
 
-    public GetLobbies(DarkProxyManager DarkProxyManager) {
+    public TPS(DarkProxyManager DarkProxyManager) {
     }
 
     @Override
     public void execute(final Invocation invocation) {
         CommandSource source = invocation.source();
-        String[] args = invocation.arguments();
 
-        source.sendMessage(Component.text("You ran the command with the following arguments: ", NamedTextColor.GREEN)
-                .append(Component.text(String.join(" ", args), NamedTextColor.WHITE)));
+        try {
+            V1PodList pods = ServerManager.getPods();
+
+            for (V1Pod pod : pods.getItems()) {
+                V1ResourceRequirements resources = pod.getSpec().getContainers().get(0).getResources();
+                source.sendMessage(Component.text(resources.toString()));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
